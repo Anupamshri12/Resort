@@ -1,0 +1,188 @@
+﻿@using Resort.Application.Common.Utility
+@using Resort.Infrastructure.Repository
+
+@model IEnumerable<Resort.Domain.Entities.Booking>
+@{
+    var pageSizes = new List<int> { 3,5, 10, 25, 50 };
+   
+}
+
+<div class="w-100 card border-0 p-4">
+    <div class="card-header bg-success bg-gradient ml-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h2 class="text-white py-2">Booking List</h2>
+            </div>
+        </div>
+    </div>
+    <div class="card-body border p-4">
+        <div class="d-flex justify-content-end pb-4 pt-2">
+            <input type="hidden" name="status" value="@ViewBag.Status"/>
+            <input type="hidden" name="sortOrderName" value="@ViewData["CurrentSort1"]" />
+            <input type="hidden" name="sortOrderCost" value="@ViewData["CurrentSort2"]" />
+            <input type="hidden" name="pagenumber" value="@ViewBag.CurrentPage" />
+            <ul class="list-group list-group-horizontal-sm">
+                
+                <li class="list-group-item @(SD.StatusPending == ViewBag.Status? "active" : "")">
+                    <a style="text-decoration:none;" asp-controller="Booking" asp-action="Index"
+                    asp-route-status="@SD.StatusPending"> @SD.StatusPending
+                    </a>
+                </li>
+                <li class="list-group-item @(SD.StatusApproved == ViewBag.Status? "active" : "")">
+                    <a style="text-decoration:none;" asp-controller="Booking" asp-action="Index"
+                    asp-route-status="@SD.StatusApproved"> @SD.StatusApproved
+                    </a>
+                </li>
+                <li class="list-group-item @(SD.StatusCompleted == ViewBag.Status? "active" : "")">
+                    <a style="text-decoration:none;" asp-controller="Booking" asp-action="Index"
+                    asp-route-status="@SD.StatusCompleted"> @SD.StatusCompleted
+                    </a>
+                </li>
+                <li class="list-group-item @(SD.StatusCancelled == ViewBag.Status? "active" : "")">
+                    <a style="text-decoration:none;" asp-controller="Booking" asp-action="Index"
+                       asp-route-status="@SD.StatusCancelled">
+                        @SD.StatusCancelled
+                    </a>
+                </li>
+            </ul>
+        </div>
+     <form asp-action="Index" method="get" class="form-inline mb-3">
+    <label for="pageSize" class="mr-2">Show</label>
+    <select id="pageSize" name="pagesize" onchange="this.form.submit()" class="form-control mr-2">
+        @foreach (var size in pageSizes)
+        {
+            if(size == ViewBag.SelectedPageSize){
+            <option value="@size" selected>@size</option>
+            }
+            else{
+             <option value="@size" >@size</option>
+
+            }
+        }
+    </select>
+    @* //for hiding so that the details must be preserved *@
+    <input type="hidden" name="sortOrderName" value="@ViewData["CurrentSort1"]" />
+    <input type="hidden" name="sortOrderCost" value="@ViewData["CurrentSort2"]" />
+    <input type="hidden" name="pagenumber" value="@ViewBag.CurrentPage" />
+
+    <span> Entries per page</span>
+</form>
+
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        Id
+                    </th>
+                    <th>
+                        
+
+                        <a asp-action="Index" asp-route-sortOrderName="@ViewData["NameSortParam"]"
+                            asp-route-pagesize = "@ViewBag.SelectedPageSize"
+                           asp-route-pagenumber ="@ViewBag.CurrentPage" asp-route-status ="@ViewBag.Status">
+                            Name
+                            @if ( (string)ViewData["CurrentSort1"] == "name_asc")
+                            {
+                                <i class="fas fa-sort-up"></i> 
+                            }
+                            else if ((string)ViewData["CurrentSort1"] == null || (string)ViewData["CurrentSort1"] == "name_desc")
+                            {
+                                <i class="fas fa-sort-down"></i> 
+                            }
+                        </a>
+                    </th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Check In Date</th>
+                    <th>Nights</th>
+                    <th>
+                        <a asp-action="Index" asp-route-sortOrderCost="@ViewData["CostSortParam"]"
+                           asp-route-pagesize="@ViewBag.SelectedPageSize"
+                           asp-route-pagenumber="@ViewBag.CurrentPage" asp-route-status="@ViewBag.Status">
+                            TotalCost $
+                            @if ((string)ViewData["CurrentSort2"] == "cost_asc")
+                            {
+                                <i class="fas fa-sort-up"></i>
+                            }
+                            else if ((string)ViewData["CurrentSort2"] == null || (string)ViewData["CurrentSort2"] == "cost_desc")
+                            {
+                                <i class="fas fa-sort-down"></i>
+                            }
+                        </a>
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                 @foreach (var obj in Model)
+                {
+                    <tr>
+                        <td>@obj.Id</td>
+                        <td>@obj.Name</td>
+                        <td>@obj.Phone</td>
+                        
+                        <td>@obj.Email</td>
+                        <td>@obj.status</td>
+
+                        <td>@obj.CheckInDate</td>
+
+                        <td>@obj.Nights</td>
+
+                        <td>@obj.TotalCost</td>
+                        <td><div class="w-20 btn-group">
+                            <a asp-controller="Booking" asp-action="BookingDetails" asp-route-bookingid = "@obj.Id" class="btn btn-outline-warning mx-1">
+                                <i class = "bi bi-pencil-square"></i>Details</a>
+                        </div></td>
+                     </tr>
+                }
+              
+            </tbody>
+        </table>
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+
+
+                <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index"
+                       asp-route-pagenumber="@(ViewBag.currentPage - 1)"
+                       asp-route-pagesize="@ViewBag.SelectedPageSize"
+                       asp-route-sortOrderName="@ViewData["CurrentSort1"]"
+                       asp-route-sortOrderCost="@ViewData["CurrentSort2"]"
+                       asp-route-status ="@ViewBag.Status"
+                       aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                @for (int i = 1; i <= ViewBag.TotalPage; i++)
+                {
+                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-pagenumber="@i"
+                           asp-route-pagesize="@ViewBag.SelectedPageSize"
+                           asp-route-sortOrderName="@ViewData["CurrentSort1"]"
+                           asp-route-sortOrderCost="@ViewData["CurrentSort2"]"
+                           asp-route-status="@ViewBag.Status">
+                            @i
+                        </a>
+                    </li>
+
+                }
+                <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPage ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index"
+                       asp-route-pagenumber="@(ViewBag.CurrentPage + 1)"
+                       asp-route-pagesize="@ViewBag.SelectedPageSize"
+                       asp-route-sortOrderName="@ViewData["CurrentSort1"]"
+                       asp-route-sortOrderCost="@ViewData["CurrentSort2"]"
+                       asp-route-status="@ViewBag.Status"
+                       aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+
+               
+
+            </ul>
+        </nav>
+    </div>
+</div>

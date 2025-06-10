@@ -1,0 +1,85 @@
+﻿@model Resort.Domain.Entities.HomeVM
+
+<div id="VillasList">
+    <div class="row row-cols-1 row-cols-lg-2 g-4 px-lg-5 m-lg-4 m-sm-0 px-sm-0">
+        @foreach (var obj in Model.Villalist)
+        {
+            <div class="col">
+                <div class="card h-100 border-secondary" style="border-radius: 10px;">
+                    <div class="row g-0 h-100">
+                        <div class="col-md-4">
+                            <img src="@obj.ImageUrl" class="img-fluid rounded-start h-100 object-fit-cover" alt="@obj.Name" style="border-radius: 10px 0 0 10px;" />
+                        </div>
+                        <div class="col-md-8 d-flex flex-column justify-content-between">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h5 class="card-title text-warning">@obj.Name</h5>
+                                    <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target='#exampleModal-@(obj.Id)'>
+                                        Details
+                                    </button>
+                                </div>
+                                <p class="card-text">
+                                    @Html.Raw(obj.Description)
+                                </p>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0">
+                                <div class="row">
+                                    <div class="col-4">
+                                        @if (Model.CheckInDate > DateOnly.FromDateTime(DateTime.Now))
+                                        {
+                                            @if (obj.IsAvailable == true)
+                                            {
+                                                <a asp-controller="Booking" asp-action="FinalizeBooking" class="btn btn-success w-100"
+                                                   asp-route-villaId="@obj.Id" asp-route-nights="@Model.Nights"
+                                                   asp-route-checkInDate="@Model.CheckInDate">
+                                                    Book
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a class="btn btn-outline-danger w-100 disabled">
+                                                    Sold Out
+                                                </a>
+                                            }
+                                        }
+                                    </div>
+                                    <div class="col-4">
+                                        <small>Max Occupancy: @obj.Occupancy</small><br />
+                                        <small>Villa Size: @obj.Sqft</small>
+                                    </div>
+                                    <div class="col-4 text-end">
+                                        <span class="text-warning fw-bold" style="font-size: 1.2rem;">
+                                            USD <span style="border-bottom:1px solid #ff6a00">$@obj.Price</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="exampleModal-@(obj.Id)" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-3 text-success" id="exampleModalLabel">Villa Details</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <partial name="_VillaDetails" model="@obj" />
+                        </div>
+                        <div class="modal-footer">
+                            <a asp-controller="Home" asp-action="GeneratePPTExport"
+                                    asp-route-id="@obj.Id"  class="btn btn-outline-warning">
+                                <i class="bi bi-file-earmark-ppt"></i> Download Villa PPT
+                            </a>
+                            <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

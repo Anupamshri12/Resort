@@ -1,0 +1,20 @@
+﻿using Resort.Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Resort.Application.Common.Interfaces
+{
+    public interface IVillaInterface:IRepository<Villa>
+    {
+       
+       
+       
+        public void Update(Villa villa);
+
+     
+        public DateTime GetCreatedTime(Villa villa);
+    }
+}

@@ -1,0 +1,189 @@
+﻿@model List<Resort.Domain.Entities.RadialChartVM>
+
+@{
+    Dictionary<int, string> dict = new()
+            {
+                [0] = "Total Bookings",
+                [1] = "Total Users",
+                [2] = "Total Revenue"
+            };
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="page-title-box d-flex align-items-center justify-content-between">
+            <h4 class="mb-0">Dashboard</h4>
+        </div>
+    </div>
+
+    <div class="row">
+        @for (int i = 0; i < Model.Count()-2; i++)
+        {
+            <div class="col-md-6 col-xl-4 mt-2">
+                <div class="card">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div class="ms-3">
+                            <p class="text-muted mb-0">@dict[i]</p>
+                            <h4 class="my-1">
+                                <span>@Model[i].TotalCount</span>
+                            </h4>
+                            <p class="text-muted mt-3 mb-0">
+                                <span>
+                                    @if (Model[i].HasRationIncreased)
+                                    {
+                                        <i class="bi bi-arrow-up-right-circle me-1 text-success"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-arrow-down-right-circle me-1 text-danger"></i>
+                                    }
+                                </span>
+                                @Model[i].IncreaseDecreaseAmount since last month
+                            </p>
+                        </div>
+                        <div id="chart-@i" class="radialChart" data-value="@Model[i].series"
+                             data-color="@(i == 0 ? "#28a745" : (i == 1 ? "#FFFF00" : "#FF0000"))"></div>
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="col-md-12 col-xl-8 mt-2">
+            <div class="card">
+                <div class="card-body">
+                    <div>
+                        <p class="text-muted mb-0">New Members And Bookings In Past 30 Days</p>
+                    </div>
+
+                    <div id="newMembersAndBookingsLineChart"
+                         data-categories='@Html.Raw(Json.Serialize(Model[4].Collections))'
+                         data-series='@Html.Raw(Json.Serialize(Model[4].seriesal))'>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12 col-xl-4 mt-2">
+            <div class="card">
+                <div class="card-body">
+                    <div class="">
+                        <p class="text-muted mb-0">Customer Bookings</p>
+                    </div>
+                    <div id="customerBookingsPieChart" data-value='@Html.Raw(Json.Serialize(Model[3].Serial))' data-colors='["--bs-warning","--bs-primary"]'
+                         data-label='@Html.Raw(Json.Serialize(Model[3].Labels))'>
+                    </div>
+
+                   
+
+                </div>
+            </div>
+    </div>
+</div>
+</div>
+
+<script src="~/js/apexcharts.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const chartElements = document.querySelectorAll('.radialChart');
+
+        chartElements.forEach(function (el) {
+            const value = parseFloat(el.getAttribute('data-value')) || 0;
+    const color = el.getAttribute('data-color') || '#28a745';
+
+            const options = {
+                series: [value],
+                chart: {
+                    type: 'radialBar',
+                    height: 100,
+                    width: 100,
+                    sparkline: { enabled: true }
+                },
+                plotOptions: {
+                    radialBar: {
+                        hollow: { size: '65%' },
+                        track: {
+                            background: '#f0f0f0',
+                            strokeWidth: '100%'
+                        },
+                        dataLabels: {
+                            show: true,
+                            name: { show: false },
+                            value: {
+                                fontSize: '18px',
+                                color: '#ffffff',
+                                offsetY: 5,
+                                formatter: function (val) {
+                                    return val + "%";
+                                }
+                            }
+                        }
+                    }
+                },
+                stroke: { lineCap: 'round' },
+                colors: [color],
+                labels: ['']
+            };
+
+            new ApexCharts(el, options).render();
+        });
+    });
+            document.addEventListener('DOMContentLoaded', function () {
+        const pieChartEl = document.querySelector("#customerBookingsPieChart");
+
+        if (pieChartEl) {
+            const values = JSON.parse(pieChartEl.getAttribute("data-value")); // ✅ FIXED
+            const labels = JSON.parse(pieChartEl.getAttribute("data-label"));
+
+            const colors = JSON.parse(pieChartEl.getAttribute("data-colors"))
+                .map(color => getComputedStyle(document.documentElement).getPropertyValue(color).trim());
+
+            const options = {
+                series: values,
+                chart: {
+                    type: 'pie',
+                    height: 250
+                },
+                labels: labels,
+                colors: colors,
+                legend: {
+                    position: 'bottom',
+                    labels:{
+                        colors:'#ffffff'
+                    }
+                }
+            };
+
+            new ApexCharts(pieChartEl, options).render();
+        }
+    });
+
+    const chartEl = document.getElementById("newMembersAndBookingsLineChart");
+
+    const categories = JSON.parse(chartEl.dataset.categories);
+    const series = JSON.parse(chartEl.dataset.series);
+
+    const options = {
+        chart: {
+            type: 'line',
+            height: 350
+        },
+        series: series,
+        xaxis: {
+            categories: categories,
+            title: { text: 'Date' }
+        },
+        yaxis: {
+            title: { text: 'Count' }
+        },
+        
+        legend:{
+            labels:{
+                colors:"#ffffff"
+            }
+        },
+        colors: ['#f1c40f', '#007bff']
+    };
+
+    const chart = new ApexCharts(chartEl, options);
+    chart.render();
+</script>
