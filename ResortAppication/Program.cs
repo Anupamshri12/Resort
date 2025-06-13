@@ -17,7 +17,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
 
 option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddIdentity<ApplicationUser ,IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
 //configuring the custom cookie providing some options for routing;
 

@@ -7,6 +7,7 @@ using Resort.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Resort.Application.Common.Utility;
+using Microsoft.Win32;
 
 
 namespace ResortAppication.Controllers
@@ -19,6 +20,7 @@ namespace ResortAppication.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+       
 
         public AccountController(IUnitofWork unitofWork, UserManager<ApplicationUser>userManager ,SignInManager<ApplicationUser>signInManager ,
             RoleManager<IdentityRole> roleManager)
@@ -155,6 +157,32 @@ namespace ResortAppication.Controllers
             return View(login);
 
 
+        }
+        public IActionResult Forgot()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> Forgot(ForgotVM forgotvm)
+        {
+            if (ModelState.IsValid)
+            {
+                var getuser = _unitofwork.User.Get(u => u.Email == forgotvm.Email);
+                var token = await _userManager.GeneratePasswordResetTokenAsync(getuser);
+
+                var result = await _userManager.ResetPasswordAsync(getuser, token ,forgotvm.Password);
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Invalid password change attempt");
+
+                }
+
+            }
+            return View(forgotvm);
         }
         public IActionResult AccessDenied()
         {
